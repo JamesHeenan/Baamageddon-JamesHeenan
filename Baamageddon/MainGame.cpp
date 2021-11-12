@@ -208,7 +208,7 @@ void HandlePlatformCollision(GameObject& obj_sheep)
 		Vector2f positionOut;
 
 		// Sweep X first
-		if (obj_sheep.velocity.x != 0.0f && obj_sheep.velocity.y <= 0.0f)
+		if (obj_sheep.velocity.x != 0.0f && obj_sheep.velocity.y > 0.0f)
 		{
 			if (AABBSweepTest(rPlatform.box, sheepAABB, { obj_sheep.velocity.x, 0.f }, positionOut))
 			{
@@ -222,7 +222,8 @@ void HandlePlatformCollision(GameObject& obj_sheep)
 		}
 
 		// When Airborne we sweep Y movement.
-		if (gameState.sheepState == STATE_AIRBORNE && obj_sheep.velocity.y >= 0.0f)
+		GameObject& obj_platform = Play::GetGameObject(rPlatform.platform_id);
+		if (gameState.sheepState == STATE_AIRBORNE && obj_sheep.pos.y < rPlatform.box.pos.y && obj_sheep.velocity.y > 0) //Added passing through from the under side of the platform
 		{
 			if (AABBSweepTest(rPlatform.box, sheepAABB, { 0.f, obj_sheep.velocity.y }, positionOut))
 			{
