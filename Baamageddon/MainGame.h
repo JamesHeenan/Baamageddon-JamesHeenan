@@ -46,6 +46,8 @@ enum GameObjectType
 	TYPE_SPIKE,
 	TYPE_WOLF,
 	TYPE_BUSH,
+	TYPE_BLADE,
+	TYPE_NULL_BLADE,
 }; 
 
 //-------------------------------------------------------------------------
@@ -68,6 +70,8 @@ struct Spike
 
 struct GameState
 {
+	float null = 0;
+	float blade = -(PLAY_PI);
 	const int jumpTimeMax = 30;
 	int score = 0;
 	int jumpTime = jumpTimeMax;
@@ -87,9 +91,13 @@ void CreatePlatforms();
 
 void CreateSpikes();
 
+void CreateBlades();
+
 void DrawScene();
 
 void UpdateWolves();
+
+void UpdateBlades();
 
 void UpdateBushes();
 

@@ -9,7 +9,7 @@
 // 2. Wolves
 // 3. Hold to Jump Higher
 // 4. Bouncy Bush
-// 5.
+// 5. Swinging Blade
 // 
 // 
 ///////////////////////////////////////////////////////////////////////////
@@ -55,6 +55,8 @@ constexpr const char* WOLF_SPRITE_NAME_RIGHT = "spr_wolf_right";
 
 constexpr const char* BUSH_SPRITE_NAME = "spr_bouncy_bush";
 
+constexpr const char* BLADE_SPRITE_NAME = "spr_swinging_blade";
+
 constexpr int LEFT_SCREEN_BOUND = 100;
 constexpr int RIGHT_SCREEN_BOUND = DISPLAY_WIDTH - LEFT_SCREEN_BOUND;
 
@@ -78,6 +80,7 @@ void MainGameEntry( PLAY_IGNORE_COMMAND_LINE )
 	LoadLevel();
 	CreatePlatforms();
 	CreateSpikes();
+	CreateBlades();
 	gameState.cameraTarget = Point2f( DISPLAY_WIDTH, DISPLAY_HEIGHT ) - Point2f( DISPLAY_WIDTH / 2.0f, DISPLAY_HEIGHT / 2.0f);
 	Play::SetCameraPosition( gameState.cameraTarget );
 }
@@ -102,6 +105,7 @@ bool MainGameUpdate(float elapsedTime)
 	UpdateSprinkles();
 	UpdateWolves();
 	UpdateBushes();
+	UpdateBlades();
 	HandleSpikeCollision();
 
 	Play::SetDrawingSpace( Play::SCREEN );
@@ -172,6 +176,18 @@ void CreateSpikes(void)
 }
 
 //-------------------------------------------------------------------------
+void CreateBlades(void)
+{
+	std::vector<int> vBlades = Play::CollectGameObjectIDsByType(TYPE_BLADE);
+
+	for (int id_blade : vBlades)
+	{
+		GameObject& obj_blade = Play::GetGameObject(id_blade);
+		Play::MoveMatchingSpriteOrigins(BLADE_SPRITE_NAME, 0, -150);
+	}
+}
+
+//-------------------------------------------------------------------------
 void DrawObjectsOfType( GameObjectType type )
 {
 	for( int id : Play::CollectGameObjectIDsByType( type ) )
@@ -205,28 +221,29 @@ void HandlePlatformCollision(GameObject& obj_sheep)
 
 	for (const Platform& rPlatform : gameState.vPlatforms )
 	{
+		GameObject& obj_platform = Play::GetGameObject(rPlatform.platform_id);
 		Vector2f positionOut;
 
 		// Sweep X first
-		if (obj_sheep.velocity.x != 0.0f && obj_sheep.velocity.y > 0.0f)
+		if (obj_sheep.velocity.null != 0.0f && obj_sheep.velocity.y > 0.0f)
 		{
-			if (AABBSweepTest(rPlatform.box, sheepAABB, { obj_sheep.velocity.x, 0.f }, positionOut))
+			if (AABBSweepTest(rPlatform.box, sheepAABB, { obj_sheep.velocity.null, 0.f }, positionOut))
 			{
-				positionOut.x += obj_sheep.velocity.x * -0.5f; // bounce out to avoid ticking.
+				positionOut.null += obj_sheep.velocity.null * -0.5f; // bounce out to avoid ticking.
 				obj_sheep.pos = positionOut;
 				sheepAABB.pos = positionOut;
-				obj_sheep.velocity.x = 0.f;
-				obj_sheep.acceleration.x = 0.f;
+				obj_sheep.velocity.null = 0.f;
+				obj_sheep.acceleration.null = 0.f;
 				++hitCount;
 			}
 		}
 
 		// When Airborne we sweep Y movement.
-		GameObject& obj_platform = Play::GetGameObject(rPlatform.platform_id);
 		if (gameState.sheepState == STATE_AIRBORNE && obj_sheep.pos.y < rPlatform.box.pos.y && obj_sheep.velocity.y > 0) //Added passing through from the under side of the platform
 		{
 			if (AABBSweepTest(rPlatform.box, sheepAABB, { 0.f, obj_sheep.velocity.y }, positionOut))
 			{
+				obj_platform.pos.y = obj_sheep.pos.y;
 				obj_sheep.pos = positionOut;
 				obj_sheep.pos.y += -1;
 				gameState.sheepState = STATE_IDLE;
@@ -249,6 +266,7 @@ void HandlePlatformCollision(GameObject& obj_sheep)
 		{
 			return;
 		}
+		Play::UpdateGameObject(obj_platform);
 	}
 
 	// We missed all platforms
@@ -270,7 +288,7 @@ void HandleSpikeCollision()
 	for (const Spike& rSpike : gameState.vSpikes)
 	{
 		Vector2f positionOut;
-		if (AABBSweepTest(rSpike.box, sheepAABB, { obj_sheep.velocity.x, 0.f }, positionOut))
+		if (AABBSweepTest(rSpike.box, sheepAABB, { obj_sheep.velocity.null, 0.f }, positionOut))
 		{
 			obj_sheep.acceleration += {0, -6}; //Flings Sheep up for a moment to add a bit of flair to the death
 			Play::UpdateGameObject(obj_sheep);
@@ -327,10 +345,10 @@ void DisplayDebugInfo(GameObject& obj_sheep)
 	info << " Playstate:" << gameState.playState;
 	info << "\nSheepstate:" << gameState.sheepState;
 
-	info << " p{ " << obj_sheep.pos.x << ", " << obj_sheep.pos.y << " } ";
-	info << " v{ " << obj_sheep.velocity.x << ", " << obj_sheep.velocity.y << " } ";
-	info << " a{ " << obj_sheep.acceleration.x << ", " << obj_sheep.acceleration.y << " } ";
-	info << " a{ " << abs(obj_sheep.pos.x - Play::GetGameObjectByType(TYPE_WOLF).pos.x) << ", " << obj_sheep.acceleration.y << " } ";
+	info << " p{ " << obj_sheep.pos.null << ", " << obj_sheep.pos.y << " } ";
+	info << " v{ " << obj_sheep.velocity.null << ", " << obj_sheep.velocity.y << " } ";
+	info << " a{ " << obj_sheep.acceleration.null << ", " << obj_sheep.acceleration.y << " } ";
+	info << " a{ " << abs(obj_sheep.pos.null - Play::GetGameObjectByType(TYPE_WOLF).pos.null) << ", " << obj_sheep.acceleration.y << " } ";
 
 	Play::DrawDebugText({ DISPLAY_WIDTH / 2, DISPLAY_HEIGHT - 50 }, info.str().c_str());
 
@@ -369,7 +387,7 @@ void UpdateSheep(GameObject& obj_sheep)
 		else
 		{
 			Play::SetSprite(obj_sheep, gameState.sheepDirection ? SHEEP_IDLE_RIGHT_SPRITE_NAME : SHEEP_IDLE_LEFT_SPRITE_NAME, 0.333f);
-			obj_sheep.velocity.x *= 0.5;
+			obj_sheep.velocity.null *= 0.5;
 			obj_sheep.acceleration = { 0, 0 };
 		}
 
@@ -393,8 +411,6 @@ void UpdateSheep(GameObject& obj_sheep)
 			
 			obj_sheep.velocity.y += -SHEEP_JUMP_IMPULSE * gameState.jumpMultiplier;
 			gameState.jumpMultiplier *= 0.75; //multiplier reduces the amount the veolcity increases by, tending towards 0. Gives a bit of an arc
-			if(gameState.jumpTime < 17)
-				gameState.sheepDirection ? obj_sheep.rotation += 0.25f : obj_sheep.rotation -= 0.25f;
 			--gameState.jumpTime;
 		}
 		else
@@ -406,14 +422,16 @@ void UpdateSheep(GameObject& obj_sheep)
 		}
 		if (Play::KeyDown(VK_LEFT))
 		{
-			obj_sheep.velocity.x = -SHEEP_WALK_SPEED;
+			obj_sheep.velocity.null = -SHEEP_WALK_SPEED;
 			Play::SetSprite(obj_sheep, SHEEP_JUMP_LEFT_SPRITE_NAME, 1.0f);
 		}
 		else if (Play::KeyDown(VK_RIGHT))
 		{
-			obj_sheep.velocity.x = SHEEP_WALK_SPEED;
+			obj_sheep.velocity.null = SHEEP_WALK_SPEED;
 			Play::SetSprite(obj_sheep, SHEEP_JUMP_RIGHT_SPRITE_NAME, 1.0f);
 		}
+		if (gameState.jumpTime < 23 )
+			gameState.sheepDirection ? obj_sheep.rotation += 0.25f : obj_sheep.rotation -= 0.25f;
 	} break;
 	};
 
@@ -462,10 +480,10 @@ void UpdateWolves()
 	for (int id_wolf : vWolves)
 	{
 		GameObject& obj_wolf = Play::GetGameObject(id_wolf);
-		float xDistance = abs(obj_sheep.pos.x - obj_wolf.pos.x);
+		float xDistance = abs(obj_sheep.pos.null - obj_wolf.pos.null);
 		if (obj_wolf.frame != 2) 
 		{
-			if (xDistance > 500 || obj_sheep.pos.x > obj_wolf.pos.x)
+			if (xDistance > 500 || obj_sheep.pos.null > obj_wolf.pos.null)
 			{
 				obj_wolf.frame = 1;
 				Play::UpdateGameObject(obj_wolf);
@@ -508,6 +526,39 @@ void UpdateWolves()
 }
 
 //-------------------------------------------------------------------------
+void UpdateBlades()
+{
+	GameObject& obj_sheep = Play::GetGameObjectByType(TYPE_SHEEP);
+	std::vector<int> vBlades = Play::CollectGameObjectIDsByType(TYPE_BLADE);
+	std::vector<int> vNull = Play::CollectGameObjectIDsByType(TYPE_NULL_BLADE);
+	for (int i = 0; i < vBlades.size(); i++)
+	{
+		GameObject& obj_blade = Play::GetGameObject(vBlades.at(0));
+		if (gameState.null <= 2 * (PLAY_PI))
+		{
+			gameState.null += 0.04f;
+			obj_blade.rotation += 0.04f;
+		}
+		else
+		{
+			gameState.null = 0;
+			obj_blade.rotation = 0;
+		}
+		GameObject& obj_null = Play::GetGameObject(vNull.at(0));
+		obj_null.pos = { obj_blade.pos.null + (270 * cos(gameState.null + PLAY_PI/2 )), obj_blade.pos.y + 270 * sin(gameState.null + PLAY_PI/2)};
+		Play::UpdateGameObject(obj_null);
+		
+		Play::UpdateGameObject(obj_blade);
+		Play::DrawObjectRotated(obj_blade);
+
+		if (Play::IsColliding(obj_sheep, obj_null))
+		{
+			gameState.playState = STATE_DEAD;
+		}
+	}	
+}
+
+//-------------------------------------------------------------------------
 void UpdateBushes()
 {
 	GameObject& obj_sheep = Play::GetGameObjectByType(TYPE_SHEEP);
@@ -524,9 +575,10 @@ void UpdateBushes()
 				obj_sheep.velocity.y = -32;
 			else obj_sheep.velocity.y = -20;
 		}
-		else
+		if(Play::IsAnimationComplete(obj_bush))
 		{
 			Play::SetSprite(obj_bush, BUSH_SPRITE_NAME, 0.f);
+			obj_bush.frame = 0;
 		}
 		Play::UpdateGameObject(obj_bush);
 	}
@@ -676,7 +728,7 @@ void PrintMouseCoordinateList()
 	if (!pressed && Play::GetMouseButton(Play::LEFT))
 	{
 		char text[32];
-		sprintf_s(text, 32, "{%.0f, %.0f},\n", Play::GetMousePos().x, Play::GetMousePos().y);
+		sprintf_s(text, 32, "{%.0f, %.0f},\n", Play::GetMousePos().null, Play::GetMousePos().y);
 		OutputDebugStringA(text);
 		pressed = true;
 	}
@@ -758,6 +810,14 @@ void LoadLevel( void )
 
 		if (sType == "TYPE_BUSH")
 			Play::CreateGameObject(TYPE_BUSH, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str());
+
+		if (sType == "TYPE_BLADE")
+		{
+			Play::CreateGameObject(TYPE_BLADE, { std::stof(sX), std::stof(sY) }, 5, sSprite.c_str());
+			Play::CreateGameObject(TYPE_NULL_BLADE, { std::stof(sX), std::stof(sY) + 270 }, 70, "");
+		}
+			
+		
 	}
 
 	levelfile.close();

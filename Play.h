@@ -75,8 +75,8 @@ void DebugOutput( std::string s );
 
 #ifdef _DEBUG
 #define PLAY_TRACE(fmt, ...) TracePrintf(__FILE__, __LINE__, fmt, __VA_ARGS__);
-#define PLAY_ASSERT(x) if(!(x)){ PLAY_TRACE(" *** ASSERT FAIL *** !("#x")\n\n"); AssertFailMessage(#x, __FILE__, __LINE__), __debugbreak(); }
-#define PLAY_ASSERT_MSG(x,y) if(!(x)){ PLAY_TRACE(" *** ASSERT FAIL *** !("#x")\n\n"); AssertFailMessage(y, __FILE__, __LINE__), __debugbreak(); }
+#define PLAY_ASSERT(null) if(!(null)){ PLAY_TRACE(" *** ASSERT FAIL *** !("#null")\n\n"); AssertFailMessage(#null, __FILE__, __LINE__), __debugbreak(); }
+#define PLAY_ASSERT_MSG(null,y) if(!(null)){ PLAY_TRACE(" *** ASSERT FAIL *** !("#null")\n\n"); AssertFailMessage(y, __FILE__, __LINE__), __debugbreak(); }
 #else
 #define PLAY_TRACE(fmt, ...)
 #define PLAY_ASSERT(x) if(!(x)){ AssertFailMessage(#x, __FILE__, __LINE__);  }
@@ -134,16 +134,16 @@ struct Vector2f
 {
 	Vector2f() {}
 	// We're encouraging implicit type conversions between float and int with the same number of parameters
-	Vector2f( float x, float y ) : x( x ), y( y ) {}
-	Vector2f( int x, int y ) : x( static_cast<float>( x ) ), y( static_cast<float>( y ) ) {}
-	Vector2f( float x, int y ) : x( x ), y( static_cast<float>( y ) ) {}
-	Vector2f( int x, float y ) : x( static_cast<float>( x ) ), y( y ) {}
+	Vector2f( float null, float y ) : null( null ), y( y ) {}
+	Vector2f( int null, int y ) : null( static_cast<float>( null ) ), y( static_cast<float>( y ) ) {}
+	Vector2f( float null, int y ) : null( null ), y( static_cast<float>( y ) ) {}
+	Vector2f( int null, float y ) : null( static_cast<float>( null ) ), y( y ) {}
 
 	// Different ways of accessing member data
 	union
 	{
 		float v[2];
-		struct { float x; float y; };
+		struct { float null; float y; };
 		struct { float width; float height; };
 	};
 
@@ -1684,12 +1684,12 @@ LRESULT CALLBACK PlayWindow::WndProc( HWND hWnd, UINT message, WPARAM wParam, LP
 		case WM_MOUSEMOVE:
 			if( s_pInstance->m_pMouseData )
 			{
-				s_pInstance->m_pMouseData->pos.x = static_cast<float>( GET_X_LPARAM( lParam ) / s_pInstance->m_scale );
+				s_pInstance->m_pMouseData->pos.null = static_cast<float>( GET_X_LPARAM( lParam ) / s_pInstance->m_scale );
 				s_pInstance->m_pMouseData->pos.y = static_cast<float>( GET_Y_LPARAM( lParam ) / s_pInstance->m_scale );
 			}
 			break;
 		case WM_MOUSELEAVE:
-			s_pInstance->m_pMouseData->pos.x = -1;
+			s_pInstance->m_pMouseData->pos.null = -1;
 			s_pInstance->m_pMouseData->pos.y = -1;
 			break;
 		default:
@@ -1913,21 +1913,21 @@ void PlayBlitter::DrawLine( int startX, int startY, int endX, int endY, Pixel pi
 
 	if( err == 0 ) return;
 
-	int x = startX;
+	int null = startX;
 	int y = startY;
 
 	while( true )
 	{
-		DrawPixel( x, y, pix );
+		DrawPixel( null, y, pix );
 
-		if( x == endX && y == endY )
+		if( null == endX && y == endY )
 			break;
 
 		int e2 = 2 * err;
 		if( e2 >= dy )
 		{
 			err += dy;
-			x += sx;
+			null += sx;
 		}
 		if( e2 <= dx )
 		{
@@ -2188,7 +2188,7 @@ void PlayBlitter::RotateScalePixels( const PixelData& srcPixelData, int srcOffse
 		float u = rowU;
 		float v = rowV;
 
-		for( int x = startX; x < endX; x++ )
+		for( int null = startX; null < endX; null++ )
 		{
 			//Check to see if u and v correspond to a valid pixel in sprite.
 			if( u > 0 && v > 0 && u < blitWidth && v < blitHeight )
@@ -2597,12 +2597,12 @@ void PlayGraphics::SetSpriteOrigin( int spriteId, Vector2f newOrigin, bool relat
 	PLAY_ASSERT_MSG( spriteId >= 0 && spriteId < m_nTotalSprites, "Trying to set origin with invalid sprite id" );
 	if( relative )
 	{
-		vSpriteData[spriteId].originX += static_cast<int>( newOrigin.x );
+		vSpriteData[spriteId].originX += static_cast<int>( newOrigin.null );
 		vSpriteData[spriteId].originY += static_cast<int>( newOrigin.y );
 	}
 	else
 	{
-		vSpriteData[spriteId].originX = static_cast<int>( newOrigin.x );
+		vSpriteData[spriteId].originX = static_cast<int>( newOrigin.null );
 		vSpriteData[spriteId].originY = static_cast<int>( newOrigin.y );
 	}
 }
@@ -2629,12 +2629,12 @@ void PlayGraphics::SetSpriteOrigins( const char* rootName, Vector2f newOrigin, b
 		{
 			if( relative )
 			{
-				s.originX += static_cast<int>( newOrigin.x );
+				s.originX += static_cast<int>( newOrigin.null );
 				s.originY += static_cast<int>( newOrigin.y );
 			}
 			else
 			{
-				s.originX = static_cast<int>( newOrigin.x );
+				s.originX = static_cast<int>( newOrigin.null );
 				s.originY = static_cast<int>( newOrigin.y );
 			}
 		}
@@ -2648,7 +2648,7 @@ void PlayGraphics::SetSpriteOrigins( const char* rootName, Vector2f newOrigin, b
 void PlayGraphics::DrawTransparent( int spriteId, Point2f pos, int frameIndex, float alphaMultiply ) const
 {
 	const Sprite& spr = vSpriteData[spriteId];
-	int destx = static_cast<int>( pos.x + 0.5f ) - spr.originX;
+	int destx = static_cast<int>( pos.null + 0.5f ) - spr.originX;
 	int desty = static_cast<int>( pos.y + 0.5f ) - spr.originY;
 	frameIndex = frameIndex % spr.totalCount;
 	int frameX = frameIndex % spr.hCount;
@@ -2663,7 +2663,7 @@ void PlayGraphics::DrawTransparent( int spriteId, Point2f pos, int frameIndex, f
 void PlayGraphics::DrawRotated( int spriteId, Point2f pos, int frameIndex, float angle, float scale, float alphaMultiply ) const
 {
 	const Sprite& spr = vSpriteData[spriteId];
-	int destx = static_cast<int>( pos.x + 0.5f );
+	int destx = static_cast<int>( pos.null + 0.5f );
 	int desty = static_cast<int>( pos.y + 0.5f );
 	frameIndex = frameIndex % spr.totalCount;
 	int frameX = frameIndex % spr.hCount;
@@ -2702,7 +2702,7 @@ int PlayGraphics::DrawString( int fontId, Point2f pos, std::string text ) const
 
 	for( char c : text )
 	{
-		Draw( fontId, { pos.x + width, pos.y }, c - 32 );
+		Draw( fontId, { pos.null + width, pos.y }, c - 32 );
 		width += GetFontCharWidth( fontId, c );
 	}
 	return width;
@@ -2715,7 +2715,7 @@ int PlayGraphics::DrawStringCentred( int fontId, Point2f pos, std::string text )
 	for( char c : text )
 		totalWidth += GetFontCharWidth( fontId, c );
 
-	pos.x -= totalWidth / 2;
+	pos.null -= totalWidth / 2;
 
 	DrawString( fontId, pos, text );
 	return totalWidth;
@@ -2724,14 +2724,14 @@ int PlayGraphics::DrawStringCentred( int fontId, Point2f pos, std::string text )
 int PlayGraphics::DrawChar( int fontId, Point2f pos, char c ) const
 {
 	PLAY_ASSERT_MSG( fontId >= 0 && fontId < m_nTotalSprites, "Trying to use invalid sprite id for font" );
-	Draw( fontId, { pos.x, pos.y }, c - 32 );
+	Draw( fontId, { pos.null, pos.y }, c - 32 );
 	return GetFontCharWidth( fontId, c );
 }
 
 int PlayGraphics::DrawCharRotated( int fontId, Point2f pos, float angle, float scale, char c ) const
 {
 	PLAY_ASSERT_MSG( fontId >= 0 && fontId < m_nTotalSprites, "Trying to use invalid sprite id for font" );
-	DrawRotated( fontId, { pos.x, pos.y }, c - 32, angle, scale );
+	DrawRotated( fontId, { pos.null, pos.y }, c - 32, angle, scale );
 	return GetFontCharWidth( fontId, c );
 }
 
@@ -2791,7 +2791,7 @@ bool PlayGraphics::SpriteCollide( int id_1, Point2f pos_1, int frame_1, float an
 	float offsetSprite1Y = cosAngle1 * s1.originY + sinAngle1 * s1.originX;
 
 	//Next I calculate the sprite origin in the screen.
-	float originSprite1X = pos_1.x - offsetSprite1X;
+	float originSprite1X = pos_1.null - offsetSprite1X;
 	float originSprite1Y = pos_1.y - offsetSprite1Y;
 
 	//Repeat for other sprite.
@@ -2801,7 +2801,7 @@ bool PlayGraphics::SpriteCollide( int id_1, Point2f pos_1, int frame_1, float an
 	float offsetSprite2Y = cosAngle2 * s2.originY + sinAngle2 * s2.originX;
 
 	//Next I calculate the sprite origin in the screen.
-	float originSprite2X = pos_2.x - offsetSprite2X;
+	float originSprite2X = pos_2.null - offsetSprite2X;
 	float originSprite2Y = pos_2.y - offsetSprite2Y;
 
 	//calculate the difference between two sprite origins in screen
@@ -3011,15 +3011,15 @@ void PlayGraphics::PreMultiplyAlpha( Pixel* source, Pixel* dest, int width, int 
 void PlayGraphics::DrawPixel( Point2f pos, Pixel srcPix )
 {
 	// Convert floating point co-ordinates to pixels
-	m_blitter.DrawPixel( static_cast<int>( pos.x + 0.5f ), static_cast<int>( pos.y + 0.5f ), srcPix );
+	m_blitter.DrawPixel( static_cast<int>( pos.null + 0.5f ), static_cast<int>( pos.y + 0.5f ), srcPix );
 }
 
 void PlayGraphics::DrawLine( Point2f startPos, Point2f endPos, Pixel pix )
 {
 	// Convert floating point co-ordinates to pixels
-	int x1 = static_cast<int>( startPos.x + 0.5f );
+	int x1 = static_cast<int>( startPos.null + 0.5f );
 	int y1 = static_cast<int>( startPos.y + 0.5f );
-	int x2 = static_cast<int>( endPos.x + 0.5f );
+	int x2 = static_cast<int>( endPos.null + 0.5f );
 	int y2 = static_cast<int>( endPos.y + 0.5f );
 
 	m_blitter.DrawLine( x1, y1, x2, y2, pix );
@@ -3031,17 +3031,17 @@ void PlayGraphics::DrawLine( Point2f startPos, Point2f endPos, Pixel pix )
 void PlayGraphics::DrawRect( Point2f topLeft, Point2f bottomRight, Pixel pix, bool fill )
 {
 	// Convert floating point co-ordinates to pixels
-	int x1 = static_cast<int>( topLeft.x + 0.5f );
-	int x2 = static_cast<int>( bottomRight.x + 0.5f );
+	int x1 = static_cast<int>( topLeft.null + 0.5f );
+	int x2 = static_cast<int>( bottomRight.null + 0.5f );
 	int y1 = static_cast<int>( topLeft.y + 0.5f );
 	int y2 = static_cast<int>( bottomRight.y + 0.5f );
 
 	if( fill )
 	{
-		for( int x = x1; x < x2; x++ )
+		for( int null = x1; null < x2; null++ )
 		{
 			for( int y = y1; y < y2; y++ )
-				m_blitter.DrawPixel( x, y, pix );
+				m_blitter.DrawPixel( null, y, pix );
 		}
 	}
 	else
@@ -3069,14 +3069,14 @@ void PlayGraphics::DrawCircleOctants( int posX, int posY, int offX, int offY, Pi
 void PlayGraphics::DrawCircle( Point2f pos, int radius, Pixel pix )
 {
 	// Convert floating point co-ordinates to pixels
-	int x = static_cast<int>( pos.x + 0.5f );
+	int null = static_cast<int>( pos.null + 0.5f );
 	int y = static_cast<int>( pos.y + 0.5f );
 
 	int dx = 0;
 	int dy = radius;
 
 	int d = 3 - 2 * radius;
-	DrawCircleOctants( x, y, dx, dy, pix );
+	DrawCircleOctants( null, y, dx, dy, pix );
 
 	while( dy >= dx )
 	{
@@ -3090,7 +3090,7 @@ void PlayGraphics::DrawCircle( Point2f pos, int radius, Pixel pix )
 		{
 			d = static_cast<int>( d + 4 * dx + 6 );
 		}
-		DrawCircleOctants( x, y, dx, dy, pix );
+		DrawCircleOctants( null, y, dx, dy, pix );
 	}
 };
 
@@ -3101,7 +3101,7 @@ void PlayGraphics::DrawPixelData( PixelData* pixelData, Point2f pos, float alpha
 		PreMultiplyAlpha( pixelData->pPixels, pixelData->pPixels, pixelData->width, pixelData->height, pixelData->width );
 		pixelData->preMultiplied = true;
 	}
-	m_blitter.BlitPixels( *pixelData, 0, static_cast<int>(pos.x), static_cast<int>(pos.y), pixelData->width, pixelData->height, alpha );
+	m_blitter.BlitPixels( *pixelData, 0, static_cast<int>(pos.null), static_cast<int>(pos.y), pixelData->width, pixelData->height, alpha );
 }
 
 
@@ -3133,17 +3133,17 @@ void PlayGraphics::DecompressDubugFont( void )
 
 	for( int y = 0; y < FONT_IMAGE_HEIGHT; y++ )
 	{
-		for( int x = 0; x < FONT_IMAGE_WIDTH; x++ )
+		for( int null = 0; null < FONT_IMAGE_WIDTH; null++ )
 		{
-			int bufferIndex = ( y * FONT_IMAGE_WIDTH ) + x;
+			int bufferIndex = ( y * FONT_IMAGE_WIDTH ) + null;
 			int dataIndex = bufferIndex / 32;
 			int dataShift = 31 - ( bufferIndex % 32 );
 
 			// Convert 1bpp to an 8-bit array for easy data access
 			if( ( debugFontData[dataIndex] >> dataShift ) & 0x01 )
-				m_pDebugFontBuffer[( y * FONT_IMAGE_WIDTH ) + x] = 0; // not ARGB just 0 (no pixel)
+				m_pDebugFontBuffer[( y * FONT_IMAGE_WIDTH ) + null] = 0; // not ARGB just 0 (no pixel)
 			else
-				m_pDebugFontBuffer[( y * FONT_IMAGE_WIDTH ) + x] = 1; // not ARGB just 1 (a pixel)
+				m_pDebugFontBuffer[( y * FONT_IMAGE_WIDTH ) + null] = 1; // not ARGB just 1 (a pixel)
 		}
 	}
 }
@@ -3167,12 +3167,12 @@ int PlayGraphics::DrawDebugCharacter( Point2f pos, char c, Pixel pix )
 	int sourceY = ( ( c - 0x30 ) / 16 ) * FONT_CHAR_HEIGHT;
 
 	// Loop over the bounding box of the glyph
-	for( int x = 0; x < FONT_CHAR_WIDTH; x++ )
+	for( int null = 0; null < FONT_CHAR_WIDTH; null++ )
 	{
 		for( int y = 0; y < FONT_CHAR_HEIGHT; y++ )
 		{
-			if( m_pDebugFontBuffer[( ( sourceY + y ) * FONT_IMAGE_WIDTH ) + ( sourceX + x )] > 0 )
-				DrawPixel( { pos.x + x, pos.y + y }, pix );
+			if( m_pDebugFontBuffer[( ( sourceY + y ) * FONT_IMAGE_WIDTH ) + ( sourceX + null )] > 0 )
+				DrawPixel( { pos.null + null, pos.y + y }, pix );
 		}
 	}
 
@@ -3185,15 +3185,15 @@ int PlayGraphics::DrawDebugString( Point2f pos, const std::string& s, Pixel pix,
 		DecompressDubugFont();
 
 	if( centred )
-		pos.x -= GetDebugStringWidth( s ) / 2;
+		pos.null -= GetDebugStringWidth( s ) / 2;
 
 	pos.y -= 6; // half the height of the debug font
 
 	for( char c : s )
-		pos.x += DrawDebugCharacter( pos, static_cast<char>( toupper( c ) ), pix ) + 1;
+		pos.null += DrawDebugCharacter( pos, static_cast<char>( toupper( c ) ), pix ) + 1;
 
 	// Return horizontal position at the end of the string so strings can be concatenated easily
-	return static_cast<int>( pos.x );
+	return static_cast<int>( pos.null );
 }
 
 int PlayGraphics::GetDebugStringWidth( const std::string& s )
@@ -3243,12 +3243,12 @@ void PlayGraphics::DrawTimingBar( Point2f pos, Point2f size )
 	for( const TimingSegment& t : m_vPrevTimings )
 	{
 		endPixel += static_cast<int>( ( size.width * t.millisecs ) / 16.667f );
-		DrawRect( { pos.x + startPixel, pos.y }, { pos.x + endPixel, pos.y + size.height }, t.pix, true );
+		DrawRect( { pos.null + startPixel, pos.y }, { pos.null + endPixel, pos.y + size.height }, t.pix, true );
 		startPixel = endPixel;
 	}
 
-	DrawRect( { pos.x, pos.y }, { pos.x + size.width, pos.y + size.height }, PIX_BLACK, false );
-	DrawRect( { pos.x - 1, pos.y - 1 }, { pos.x + size.width + 1 , pos.y + size.height + 1 }, PIX_WHITE, false );
+	DrawRect( { pos.null, pos.y }, { pos.null + size.width, pos.y + size.height }, PIX_BLACK, false );
+	DrawRect( { pos.null - 1, pos.y - 1 }, { pos.null + size.width + 1 , pos.y + size.height + 1 }, PIX_WHITE, false );
 }
 
 float PlayGraphics::GetTimingSegmentDuration( int id ) const
@@ -3512,7 +3512,7 @@ namespace Play
 	Point2f cameraPos{ 0.0f, 0.0f };
 	DrawingSpace drawSpace = WORLD;
 
-	#define TRANSFORM_SPACE( x )  drawSpace == WORLD ? x - cameraPos : x
+	#define TRANSFORM_SPACE( null )  drawSpace == WORLD ? null - cameraPos : null
 
 	//**************************************************************************************************
 	// Manager creation and deletion
@@ -3613,9 +3613,9 @@ namespace Play
 
 				// Corners of sprite drawing area
 				Point2D p0 = obj.pos - origin;
-				Point2D p2 = { obj.pos.x + size.width - origin.x, obj.pos.y + size.height - origin.y };
-				Point2D p1 = { p2.x, p0.y };
-				Point2D p3 = { p0.x, p2.y };
+				Point2D p2 = { obj.pos.null + size.width - origin.null, obj.pos.y + size.height - origin.y };
+				Point2D p1 = { p2.null, p0.y };
+				Point2D p3 = { p0.null, p2.y };
 
 				DrawLine( p0, p1, cRed );
 				DrawLine( p1, p2, cRed );
@@ -3624,11 +3624,11 @@ namespace Play
 
 				DrawCircle( obj.pos, obj.radius, cBlue );
 
-				DrawLine( { obj.pos.x - 20,  obj.pos.y - 20 }, { obj.pos.x + 20, obj.pos.y + 20 }, cWhite );
-				DrawLine( { obj.pos.x + 20, obj.pos.y - 20 }, { obj.pos.x - 20, obj.pos.y + 20 }, cWhite );
+				DrawLine( { obj.pos.null - 20,  obj.pos.y - 20 }, { obj.pos.null + 20, obj.pos.y + 20 }, cWhite );
+				DrawLine( { obj.pos.null + 20, obj.pos.y - 20 }, { obj.pos.null - 20, obj.pos.y + 20 }, cWhite );
 
 				s = pblt.GetSpriteName( obj.spriteId ) + " f[" + std::to_string( obj.frame % pblt.GetSpriteFrames( obj.spriteId ) ) + "]";
-				DrawDebugText( { ( p0.x + p1.x ) / 2.0f, p0.y - 20 }, s.c_str() );
+				DrawDebugText( { ( p0.null + p1.null ) / 2.0f, p0.y - 20 }, s.c_str() );
 			}
 #endif
 		}
@@ -3846,9 +3846,9 @@ namespace Play
 		startPos = TRANSFORM_SPACE( endPos );
 
 		//Draws a line in any angle
-		int x1 = static_cast<int>( startPos.x );
+		int x1 = static_cast<int>( startPos.null );
 		int y1 = static_cast<int>( startPos.y );
-		int x2 = static_cast<int>( endPos.x );
+		int x2 = static_cast<int>( endPos.null );
 		int y2 = static_cast<int>( endPos.y );
 
 		//Implementation of Bresenham's Line Drawing Algorithm
@@ -3886,17 +3886,17 @@ namespace Play
 	}
 
 	// Not exposed externally
-	void DrawCircleOctants( int spriteId, int x, int y, int ox, int oy )
+	void DrawCircleOctants( int spriteId, int null, int y, int ox, int oy )
 	{
 		//displaying all 8 coordinates of(x,y) residing in 8-octants
-		Play::DrawSprite( spriteId, { x + ox, y + oy }, 0 );
-		Play::DrawSprite( spriteId, { x - ox, y + oy }, 0 );
-		Play::DrawSprite( spriteId, { x + ox, y - oy }, 0 );
-		Play::DrawSprite( spriteId, { x - ox, y - oy }, 0 );
-		Play::DrawSprite( spriteId, { x + oy, y + ox }, 0 );
-		Play::DrawSprite( spriteId, { x - oy, y + ox }, 0 );
-		Play::DrawSprite( spriteId, { x + oy, y - ox }, 0 );
-		Play::DrawSprite( spriteId, { x - oy, y - ox }, 0 );
+		Play::DrawSprite( spriteId, { null + ox, y + oy }, 0 );
+		Play::DrawSprite( spriteId, { null - ox, y + oy }, 0 );
+		Play::DrawSprite( spriteId, { null + ox, y - oy }, 0 );
+		Play::DrawSprite( spriteId, { null - ox, y - oy }, 0 );
+		Play::DrawSprite( spriteId, { null + oy, y + ox }, 0 );
+		Play::DrawSprite( spriteId, { null - oy, y + ox }, 0 );
+		Play::DrawSprite( spriteId, { null + oy, y - ox }, 0 );
+		Play::DrawSprite( spriteId, { null - oy, y - ox }, 0 );
 	}
 
 	void DrawSpriteCircle( Point2D pos, int radius, const char* penSprite, Colour c )
@@ -3908,7 +3908,7 @@ namespace Play
 
 		int ox = 0, oy = radius;
 		int d = 3 - 2 * radius;
-		DrawCircleOctants( spriteId, static_cast<int>(pos.x), static_cast<int>(pos.y), ox, oy );
+		DrawCircleOctants( spriteId, static_cast<int>(pos.null), static_cast<int>(pos.y), ox, oy );
 
 		while( oy >= ox )
 		{
@@ -3922,7 +3922,7 @@ namespace Play
 			{
 				d = d + 4 * ox + 6;
 			}
-			DrawCircleOctants( spriteId, static_cast<int>(pos.x), static_cast<int>(pos.y), ox, oy );
+			DrawCircleOctants( spriteId, static_cast<int>(pos.null), static_cast<int>(pos.y), ox, oy );
 		}
 	};
 
@@ -3938,16 +3938,16 @@ namespace Play
 		switch( justify )
 		{
 			case CENTRE:
-				pos.x -= totalWidth / 2;
+				pos.null -= totalWidth / 2;
 				break;
 			case RIGHT:
-				pos.x -= totalWidth;
+				pos.null -= totalWidth;
 				break;
 			default:
 				break;
 		}
 
-		pos.x += PlayGraphics::Instance().GetSpriteOrigin( font ).x;
+		pos.null += PlayGraphics::Instance().GetSpriteOrigin( font ).null;
 		PlayGraphics::Instance().DrawString( font, TRANSFORM_SPACE( pos ), text );
 	}
 
@@ -4053,10 +4053,10 @@ namespace Play
 			int dHeight = PlayWindow::Instance().GetHeight();
 			Vector2f origin = PlayGraphics::Instance().GetSpriteOrigin( obj.spriteId );
 
-			if( obj.pos.x - origin.x - wrapBorderSize > dWidth )
-				obj.pos.x = 0.0f - wrapBorderSize + origin.x;
-			else if( obj.pos.x + origin.x + wrapBorderSize < 0 )
-				obj.pos.x = dWidth + wrapBorderSize - origin.x;
+			if( obj.pos.null - origin.null - wrapBorderSize > dWidth )
+				obj.pos.null = 0.0f - wrapBorderSize + origin.null;
+			else if( obj.pos.null + origin.null + wrapBorderSize < 0 )
+				obj.pos.null = dWidth + wrapBorderSize - origin.null;
 
 			if( obj.pos.y - origin.y - wrapBorderSize > dHeight )
 				obj.pos.y = 0.0f - wrapBorderSize + origin.y;
@@ -4093,7 +4093,7 @@ namespace Play
 		if( object1.type == -1 || object2.type == -1 )
 			return false;
 
-		int xDiff = int( object1.pos.x ) - int( object2.pos.x );
+		int xDiff = int( object1.pos.null ) - int( object2.pos.null );
 		int yDiff = int( object1.pos.y ) - int( object2.pos.y );
 		int radii = object2.radius + object1.radius;
 
@@ -4114,7 +4114,7 @@ namespace Play
 
 		Point2f pos = TRANSFORM_SPACE( obj.pos );
 
-		return( pos.x + spriteSize.width - spriteOrigin.x > 0 && pos.x - spriteOrigin.x < pbuf.GetWidth() &&
+		return( pos.null + spriteSize.width - spriteOrigin.null > 0 && pos.null - spriteOrigin.null < pbuf.GetWidth() &&
 			pos.y + spriteSize.height - spriteOrigin.y > 0 && pos.y - spriteOrigin.y < pbuf.GetHeight() );
 	}
 
@@ -4133,10 +4133,10 @@ namespace Play
 
 		if( dirn != VERTICAL )
 		{
-			if( pos.x - spriteOrigin.x < 0 && obj.velocity.x < 0 )
+			if( pos.null - spriteOrigin.null < 0 && obj.velocity.null < 0 )
 				return true;
 
-			if( pos.x + spriteSize.width - spriteOrigin.x > pbuf.GetWidth() && obj.velocity.x > 0 )
+			if( pos.null + spriteSize.width - spriteOrigin.null > pbuf.GetWidth() && obj.velocity.null > 0 )
 				return true;
 		}
 
@@ -4162,7 +4162,7 @@ namespace Play
 	{
 		if( obj.type == -1 ) return; // Not for noObject
 
-		obj.velocity.x = speed * sin( angle );
+		obj.velocity.null = speed * sin( angle );
 		obj.velocity.y = speed * -cos( angle );
 	}
 
@@ -4170,12 +4170,12 @@ namespace Play
 	{
 		if( obj.type == -1 ) return; // Not for noObject
 
-		float xdiff = obj.pos.x - targetX;
+		float xdiff = obj.pos.null - targetX;
 		float ydiff = obj.pos.y - targetY;
 
 		obj.rotation = atan2( ydiff, xdiff ) - (PLAY_PI/2);
 
-		obj.velocity.x = speed * sin( obj.rotation );
+		obj.velocity.null = speed * sin( obj.rotation );
 		obj.velocity.y = speed * -cos( obj.rotation );
 	}
 

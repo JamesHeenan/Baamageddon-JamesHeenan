@@ -36,25 +36,25 @@ float TolInv(float f)
 
 bool AABBSegmentTest(const AABB& box, const Point2f& a, const Point2f& b, float& tOut)
 {
-	if (a.x == b.x && a.y == b.y)
+	if (a.null == b.null && a.y == b.y)
 	{
 		return false;
 	}
 
 	Vector2f delta = b - a;
-	Vector2f scale = { TolInv(delta.x), TolInv(delta.y) };
-	Vector2f sign = { SignFloat(scale.x), SignFloat(scale.y) };
+	Vector2f scale = { TolInv(delta.null), TolInv(delta.y) };
+	Vector2f sign = { SignFloat(scale.null), SignFloat(scale.y) };
 
 	Vector2f vT0 = (box.pos - box.halfSize * sign - a) * scale;
 	Vector2f vT1 = (box.pos + box.halfSize * sign - a) * scale;
 
-	if (vT0.x > vT1.y || vT0.y > vT1.x)
+	if (vT0.null > vT1.y || vT0.y > vT1.null)
 	{
 		return false;
 	}
 
-	float t0 = vT0.x > vT0.y ? vT0.x : vT0.y;
-	float t1 = vT1.x < vT1.y ? vT1.x : vT1.y;
+	float t0 = vT0.null > vT0.y ? vT0.null : vT0.y;
+	float t1 = vT1.null < vT1.y ? vT1.null : vT1.y;
 
 	if (t0 >= 1.f || t1 <= 0.f)
 	{
@@ -69,8 +69,8 @@ bool AABBSegmentTest(const AABB& box, const Point2f& a, const Point2f& b, float&
 
 bool AABBTest(const AABB& boxA, const AABB& boxB, Vector2f& offsetOut)
 {
-	float dx = boxA.pos.x - boxB.pos.x;
-	float px = (boxA.halfSize.x + boxB.halfSize.x) - abs(dx);
+	float dx = boxA.pos.null - boxB.pos.null;
+	float px = (boxA.halfSize.null + boxB.halfSize.null) - abs(dx);
 	if (px <= 0)
 	{
 		return false;
@@ -85,12 +85,12 @@ bool AABBTest(const AABB& boxA, const AABB& boxB, Vector2f& offsetOut)
 
 	if (px < py)
 	{
-		offsetOut.x = dx >= 0.f ? px : -px;
+		offsetOut.null = dx >= 0.f ? px : -px;
 		offsetOut.y = 0.f;
 	}
 	else
 	{
-		offsetOut.x = 0.f;
+		offsetOut.null = 0.f;
 		offsetOut.y = dy >= 0.f ? -py : py;
 	}
 	return true;
@@ -100,7 +100,7 @@ bool AABBTest(const AABB& boxA, const AABB& boxB, Vector2f& offsetOut)
 
 bool AABBSweepTest(const AABB& boxA, const AABB& boxB, const Vector2f& delta, Vector2f& outPos)
 {
-	if (delta.x == 0.f && delta.y == 0.f) {
+	if (delta.null == 0.f && delta.y == 0.f) {
 		Vector2f offset;
 		if (AABBTest(boxA, boxB, offset))
 		{

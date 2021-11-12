@@ -35,6 +35,8 @@ constexpr const char* WOLF_SPRITE_NAME = "spr_wolf_left_3";
 
 constexpr const char* BUSH_SPRITE_NAME = "spr_bouncy_bush_4";
 
+constexpr const char* BLADE_SPRITE_NAME = "spr_swinging_blade";
+
 constexpr int FLOOR_BOUND = DISPLAY_HEIGHT * 2;
 
 enum GameObjectType
@@ -46,6 +48,7 @@ enum GameObjectType
 	TYPE_SPIKE,
 	TYPE_WOLF,
 	TYPE_BUSH,
+	TYPE_BLADE,
 	TOTAL_TYPES
 };
 
@@ -56,7 +59,8 @@ const char* SPRITE_NAMES[TOTAL_TYPES][4] =
 	{ DOUGHNUT_SPRITE_NAME, DOUGHNUT_SPRITE_NAME, DOUGHNUT_SPRITE_NAME, DOUGHNUT_SPRITE_NAME },
 	{ SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME },
 	{ WOLF_SPRITE_NAME, WOLF_SPRITE_NAME, WOLF_SPRITE_NAME, WOLF_SPRITE_NAME },
-	{ BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME }
+	{ BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME },
+	{ BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, }
 };
 
 struct EditorState
@@ -128,10 +132,10 @@ void HandleControls( void )
 		SaveLevel();
 
 	if( Play::KeyDown( VK_RIGHT ) )
-		editorState.cameraTarget.x += CAMERA_SPEED / editorState.zoom;
+		editorState.cameraTarget.null += CAMERA_SPEED / editorState.zoom;
 
 	if( Play::KeyDown( VK_LEFT ) )
-		editorState.cameraTarget.x -= CAMERA_SPEED / editorState.zoom;
+		editorState.cameraTarget.null -= CAMERA_SPEED / editorState.zoom;
 
 	if( Play::KeyDown( VK_UP ) )
 		editorState.cameraTarget.y -= CAMERA_SPEED / editorState.zoom;
@@ -160,14 +164,15 @@ void HandleControls( void )
 			case TYPE_DOUGHNUT: editorState.editMode = TYPE_SPIKE; break;
 			case TYPE_SPIKE: editorState.editMode = TYPE_WOLF; break;
 			case TYPE_WOLF: editorState.editMode = TYPE_BUSH; break;
-			case TYPE_BUSH: editorState.editMode = TYPE_SHEEP; break;
+			case TYPE_BUSH: editorState.editMode = TYPE_BLADE; break;
+			case TYPE_BLADE: editorState.editMode = TYPE_SHEEP; break;
 		}
 		editorState.selectedObj = -1;
 	}
 
 	Point2f mouseWorldPos = ( Play::GetMousePos() + Play::GetCameraPosition() ) / editorState.zoom;
 	Point2f mouseWorldSnapPos = mouseWorldPos;
-	mouseWorldSnapPos.x -= (int)mouseWorldSnapPos.x % SNAP_PIXELS;
+	mouseWorldSnapPos.null -= (int)mouseWorldSnapPos.null % SNAP_PIXELS;
 	mouseWorldSnapPos.y -= (int)mouseWorldSnapPos.y % SNAP_PIXELS;
 
 	if( Play::GetMouseButton( Play::LEFT ) )
@@ -249,6 +254,7 @@ void DrawScene( void )
 	DrawObjectsOfType( TYPE_SPIKE );
 	DrawObjectsOfType( TYPE_WOLF );
 	DrawObjectsOfType( TYPE_BUSH );
+	DrawObjectsOfType(TYPE_BLADE);
 
 	if( editorState.selectedObj != -1 )
 	{
@@ -256,8 +262,8 @@ void DrawScene( void )
 		Point2f origin = Play::GetSpriteOrigin( obj.spriteId );
 		Point2f size = { Play::GetSpriteWidth( obj.spriteId ), Play::GetSpriteHeight( obj.spriteId ) };
 		Play::DrawRect( ( obj.pos - origin ) * editorState.zoom, ( obj.pos - origin + size ) * editorState.zoom, Play::cWhite );
-		std::string s = "X:" + std::to_string( (int)( obj.pos.x + 0.5f ) ) + " / Y:" + std::to_string( (int)( obj.pos.y + 0.5f ) );
-		Play::DrawDebugText( ( obj.pos - origin + Point2f( size.x / 2.0f, -10.0f / editorState.zoom ) ) * editorState.zoom, s.c_str(), Play::cWhite );
+		std::string s = "X:" + std::to_string( (int)( obj.pos.null + 0.5f ) ) + " / Y:" + std::to_string( (int)( obj.pos.y + 0.5f ) );
+		Play::DrawDebugText( ( obj.pos - origin + Point2f( size.null / 2.0f, -10.0f / editorState.zoom ) ) * editorState.zoom, s.c_str(), Play::cWhite );
 	}
 
 }
@@ -275,6 +281,7 @@ void DrawUserInterface( void )
 		case TYPE_SPIKE: sMode = "SPIKES"; break;
 		case TYPE_WOLF: sMode = "WOLVES"; break;
 		case TYPE_BUSH: sMode = "BUSHES"; break;
+		case TYPE_BLADE: sMode = "SWINGING BLADE"; break;
 	}
 
 	Play::DrawRect( { 0, 0 }, { DISPLAY_WIDTH, 50 }, Play::cYellow, true );
@@ -333,7 +340,7 @@ bool PointInsideSpriteBounds( Point2f testPos, GameObject& obj )
 	Point2f size = { Play::GetSpriteWidth( obj.spriteId ), Play::GetSpriteHeight( obj.spriteId ) };
 	Point2f topLeft = obj.pos - origin;
 	Point2f botRight = topLeft + size;
-	return testPos.x > topLeft.x && testPos.x < botRight.x&& testPos.y > topLeft.y && testPos.y < botRight.y;
+	return testPos.null > topLeft.null && testPos.null < botRight.null&& testPos.y > topLeft.y && testPos.y < botRight.y;
 }
 
 
@@ -372,6 +379,9 @@ void LoadLevel( void )
 
 		if (sType == "TYPE_BUSH")
 			Play::CreateGameObject( TYPE_BUSH, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str() );
+
+		if (sType == "TYPE_BLADE")
+			Play::CreateGameObject(TYPE_BLADE, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str());
 	}
 
 	levelfile.close();
@@ -409,9 +419,12 @@ void SaveLevel( void )
 			case TYPE_BUSH:
 				levelfile << "TYPE_BUSH\n";
 				break;
+			case TYPE_BLADE:
+				levelfile << "TYPE_BLADE\n";
+				break;
 
 		}
-		levelfile << std::to_string( obj.pos.x ) + "f\n" << std::to_string( obj.pos.y ) + "f\n";
+		levelfile << std::to_string( obj.pos.null ) + "f\n" << std::to_string( obj.pos.y ) + "f\n";
 		levelfile << Play::GetSpriteName( obj.spriteId ) << "\n";
 	}
 	
