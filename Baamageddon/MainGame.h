@@ -48,6 +48,7 @@ enum GameObjectType
 	TYPE_BUSH,
 	TYPE_BLADE,
 	TYPE_NULL_BLADE,
+	TYPE_FINAL
 }; 
 
 //-------------------------------------------------------------------------
@@ -70,8 +71,8 @@ struct Spike
 
 struct GameState
 {
+	int doughnutsLeft;
 	float null = 0;
-	float blade = -(PLAY_PI);
 	const int jumpTimeMax = 30;
 	int score = 0;
 	int jumpTime = jumpTimeMax;

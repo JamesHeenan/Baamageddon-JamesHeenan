@@ -37,6 +37,8 @@ constexpr const char* BUSH_SPRITE_NAME = "spr_bouncy_bush_4";
 
 constexpr const char* BLADE_SPRITE_NAME = "spr_swinging_blade";
 
+constexpr const char* FINAL_SPRITE_NAME = "spr_invisible_marker";
+
 constexpr int FLOOR_BOUND = DISPLAY_HEIGHT * 2;
 
 enum GameObjectType
@@ -49,6 +51,7 @@ enum GameObjectType
 	TYPE_WOLF,
 	TYPE_BUSH,
 	TYPE_BLADE,
+	TYPE_FINAL,
 	TOTAL_TYPES
 };
 
@@ -60,7 +63,8 @@ const char* SPRITE_NAMES[TOTAL_TYPES][4] =
 	{ SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME, SPIKE_SPRITE_NAME },
 	{ WOLF_SPRITE_NAME, WOLF_SPRITE_NAME, WOLF_SPRITE_NAME, WOLF_SPRITE_NAME },
 	{ BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME, BUSH_SPRITE_NAME },
-	{ BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, }
+	{ BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, BLADE_SPRITE_NAME, },
+	{ FINAL_SPRITE_NAME, FINAL_SPRITE_NAME, FINAL_SPRITE_NAME, FINAL_SPRITE_NAME,}
 };
 
 struct EditorState
@@ -165,7 +169,8 @@ void HandleControls( void )
 			case TYPE_SPIKE: editorState.editMode = TYPE_WOLF; break;
 			case TYPE_WOLF: editorState.editMode = TYPE_BUSH; break;
 			case TYPE_BUSH: editorState.editMode = TYPE_BLADE; break;
-			case TYPE_BLADE: editorState.editMode = TYPE_SHEEP; break;
+			case TYPE_BLADE: editorState.editMode = TYPE_FINAL; break;
+			case TYPE_FINAL: editorState.editMode = TYPE_SHEEP; break;
 		}
 		editorState.selectedObj = -1;
 	}
@@ -195,6 +200,9 @@ void HandleControls( void )
 				{
 					case TYPE_SHEEP:
 						Play::GetGameObjectByType( TYPE_SHEEP ).pos = mouseWorldPos;
+						break;
+					case TYPE_FINAL:
+						Play::GetGameObjectByType(TYPE_FINAL).pos = mouseWorldPos;
 						break;
 					default:
 						editorState.selectedObj = Play::CreateGameObject( editorState.editMode, mouseWorldSnapPos, 50, SPRITE_NAMES[static_cast<int>( editorState.editMode )][0] );
@@ -255,6 +263,7 @@ void DrawScene( void )
 	DrawObjectsOfType( TYPE_WOLF );
 	DrawObjectsOfType( TYPE_BUSH );
 	DrawObjectsOfType(TYPE_BLADE);
+	DrawObjectsOfType(TYPE_FINAL);
 
 	if( editorState.selectedObj != -1 )
 	{
@@ -282,6 +291,7 @@ void DrawUserInterface( void )
 		case TYPE_WOLF: sMode = "WOLVES"; break;
 		case TYPE_BUSH: sMode = "BUSHES"; break;
 		case TYPE_BLADE: sMode = "SWINGING BLADE"; break;
+		case TYPE_FINAL: sMode = "FINAL DONUT"; break;
 	}
 
 	Play::DrawRect( { 0, 0 }, { DISPLAY_WIDTH, 50 }, Play::cYellow, true );
@@ -382,6 +392,9 @@ void LoadLevel( void )
 
 		if (sType == "TYPE_BLADE")
 			Play::CreateGameObject(TYPE_BLADE, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str());
+
+		if (sType == "TYPE_FINAL")
+			Play::CreateGameObject(TYPE_FINAL, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str());
 	}
 
 	levelfile.close();
@@ -421,6 +434,9 @@ void SaveLevel( void )
 				break;
 			case TYPE_BLADE:
 				levelfile << "TYPE_BLADE\n";
+				break;
+			case TYPE_FINAL:
+				levelfile << "TYPE_FINAL\n";
 				break;
 
 		}

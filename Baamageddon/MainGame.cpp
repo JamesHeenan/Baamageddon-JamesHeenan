@@ -10,8 +10,7 @@
 // 3. Hold to Jump Higher
 // 4. Bouncy Bush
 // 5. Swinging Blade
-// 
-// 
+// 6. Exit Doughnut
 ///////////////////////////////////////////////////////////////////////////
 
 #define PLAY_IMPLEMENTATION
@@ -56,6 +55,8 @@ constexpr const char* WOLF_SPRITE_NAME_RIGHT = "spr_wolf_right";
 constexpr const char* BUSH_SPRITE_NAME = "spr_bouncy_bush";
 
 constexpr const char* BLADE_SPRITE_NAME = "spr_swinging_blade";
+
+constexpr const char* FINAL_SPRITE_NAME = "level_exit";
 
 constexpr int LEFT_SCREEN_BOUND = 100;
 constexpr int RIGHT_SCREEN_BOUND = DISPLAY_WIDTH - LEFT_SCREEN_BOUND;
@@ -602,10 +603,13 @@ void UpdateSprinkles()
 }
 
 //-------------------------------------------------------------------------
+//Added Final Doughnut logic here
 void UpdateDoughnuts()
 {
 	GameObject& obj_sheep = Play::GetGameObjectByType(TYPE_SHEEP);
 	std::vector<int> vDoughnuts = Play::CollectGameObjectIDsByType(TYPE_DOUGHNUT);
+
+	gameState.doughnutsLeft = vDoughnuts.size();
 
 	for (int id_doughnut : vDoughnuts)
 	{
@@ -632,6 +636,37 @@ void UpdateDoughnuts()
 
 		if (hasCollided)
 			Play::DestroyGameObject(id_doughnut);
+	}
+
+	if (gameState.doughnutsLeft == 0)
+	{
+		bool hasCollided = false;
+		GameObject& obj_final = Play::GetGameObjectByType(TYPE_FINAL);
+		Play::DrawObject(obj_final);
+		Play::SetSprite(obj_final, FINAL_SPRITE_NAME, 1.f);
+		Play::UpdateGameObject(obj_final);
+		if (Play::IsColliding(obj_final, obj_sheep))
+		{
+			int sprinkles = 10;
+			while (sprinkles >= 0) 
+			{
+				for (float rad{ 0.05f }; rad < 2.0f; rad += 0.05f)
+				{
+					int id = Play::CreateGameObject(TYPE_SPRINKLE, obj_final.pos, 0, SPRINKLE_SPRITE_NAME);
+					GameObject& obj_sprinkle = Play::GetGameObject(id);
+					obj_sprinkle.rotSpeed = 0.1f;
+					obj_sprinkle.acceleration = { 0.0f, 0.5f };
+					Play::SetGameObjectDirection(obj_sprinkle, 16, rad * PLAY_PI);
+				}
+				--sprinkles;
+			}
+			hasCollided = true;
+			
+			Play::PlayAudio("munch");
+		}
+
+		if (hasCollided)
+			Play::DestroyGameObject(obj_final.GetId());
 	}
 }
 
@@ -816,6 +851,9 @@ void LoadLevel( void )
 			Play::CreateGameObject(TYPE_BLADE, { std::stof(sX), std::stof(sY) }, 5, sSprite.c_str());
 			Play::CreateGameObject(TYPE_NULL_BLADE, { std::stof(sX), std::stof(sY) + 270 }, 70, "");
 		}
+
+		if (sType == "TYPE_FINAL")
+			Play::CreateGameObject(TYPE_FINAL, { std::stof(sX), std::stof(sY) }, 30, sSprite.c_str());
 			
 		
 	}
