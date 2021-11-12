@@ -457,9 +457,10 @@ void UpdateWolves()
 	GameObject& obj_sheep = Play::GetGameObjectByType(TYPE_SHEEP);
 	std::vector<int> vWolves = Play::CollectGameObjectIDsByType(TYPE_WOLF);
 
+
+	static bool hasCollided = false;
 	for (int id_wolf : vWolves)
 	{
-		bool hasCollided = false;
 		GameObject& obj_wolf = Play::GetGameObject(id_wolf);
 		float xDistance = abs(obj_sheep.pos.x - obj_wolf.pos.x);
 		if (obj_wolf.frame != 2) 
@@ -472,7 +473,7 @@ void UpdateWolves()
 			else
 			{
 				obj_wolf.frame = 0;
-				if (xDistance < 200 && obj_wolf.pos.y > obj_sheep.pos.y)
+				if (xDistance < 200 && obj_wolf.pos.y + 100 > obj_sheep.pos.y)
 				{
 					obj_wolf.frame = 2;
 				}
@@ -519,9 +520,17 @@ void UpdateBushes()
 		if (Play::IsColliding(obj_bush, obj_sheep))
 		{
 			Play::SetSprite(obj_bush, BUSH_SPRITE_NAME, 1.0f);
-			obj_sheep.velocity.y -= 10;
+			if(Play::KeyDown(VK_SPACE))
+				obj_sheep.velocity.y = -32;
+			else obj_sheep.velocity.y = -20;
 		}
+		else
+		{
+			Play::SetSprite(obj_bush, BUSH_SPRITE_NAME, 0.f);
+		}
+		Play::UpdateGameObject(obj_bush);
 	}
+	
 }
 
 //-- ----------------------------------------------------------------------
